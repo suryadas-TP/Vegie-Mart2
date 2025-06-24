@@ -271,7 +271,7 @@ const saveOrder = async (req, res) => {
           name: product.name,
           price: product.price,
           qty,
-          image: product.imageUrl, // ✅ get actual Cloudinary image URL
+          image: product.imageUrl, //  get actual Cloudinary image URL
         };
       })
     );
