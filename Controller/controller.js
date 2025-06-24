@@ -13,7 +13,7 @@ require('dotenv').config();
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_API_KEY,
-  key_secret: process.env.RAZORPAY_API_SECRET ,
+  key_secret: process.env.RAZORPAY_API_SECRET,
 });
 
 
@@ -178,7 +178,11 @@ const addToCart = async (req, res) => {
 
     await userCart.save();
 
-    const populatedCart = await Cart.findOne({ userId }).populate('items.productId');
+    const populatedCart = await Cart.findOne({ userId }).populate('items.productId')
+      .populate({
+        path: 'items.productId',
+        select: 'name price imageUrl'
+      });
 
     const normalizedItems = populatedCart.items.map((item) => ({
       _id: item.productId._id,
@@ -202,8 +206,8 @@ const getUserCart = async (req, res) => {
   try {
     const userId = req.user.id;
     const userCart = await Cart.findOne({ userId: req.user.id }).populate({
-     path: 'items.productId',
-    select:'name price image'
+      path: 'items.productId',
+      select: 'name price imageUrl'
     });
 
     if (!userCart) {
@@ -225,18 +229,18 @@ const getUserCart = async (req, res) => {
   }
 };
 
-const removeFromCart = async(req,res)=>{
-const userId = req.userId;
-const productId = req.params.productId;
+const removeFromCart = async (req, res) => {
+  const userId = req.userId;
+  const productId = req.params.productId;
 
-const cart = await Cart.findOne({userId});
+  const cart = await Cart.findOne({ userId });
 
-if(!cart) return res.status(404).json({error:"Cart not found"});
+  if (!cart) return res.status(404).json({ error: "Cart not found" });
 
-cart.items = cart.items.filter(item=> item.productId.toString() !== productId);
-await cart.save();
- 
-res.json({message:"Item removed"});
+  cart.items = cart.items.filter(item => item.productId.toString() !== productId);
+  await cart.save();
+
+  res.json({ message: "Item removed" });
 }
 
 const createPaymentOrder = async (req, res) => {
@@ -304,6 +308,7 @@ const saveOrder = async (req, res) => {
 //     res.status(500).json({ error: 'Failed to get order' });
 //   }
 // };
+
 const getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;
